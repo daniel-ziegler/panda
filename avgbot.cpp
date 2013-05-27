@@ -1,3 +1,4 @@
+#define dbg(x) x
 #include <cstdio>
 #include <cstring>
 #include <cassert>
@@ -16,23 +17,25 @@ int client_setup(int *argc, char ***argv)
 
 int tally[MAXCOWS][MAXPLAYERS];
 double getprob(int roundnum, int cow, int player) {
-	roundnum++;
 	return (double)tally[cow][player] / roundnum;
 }
 double probdp[MAXPLAYERS + 1][MAXPLAYERS + 1];
 
-FILE* fout;
-
 // This function is called when the game begins, and provides initial player pools via the players array.
 void game_setup(const struct player_data* players, unsigned int numplayers)
 {
-	fout = fopen("log.txt", "w");
 }
 
+bool firstround = true;
+
+int our_roundnum = 0;
+
 // When this function is called, your bot should respond with your move.
-int player_turn(unsigned int roundnum, const struct player_data* players, unsigned int numplayers)
+int player_turn(unsigned int roundnum_fail, const struct player_data* players, unsigned int numplayers)
 {
-	if(roundnum == 0) {
+	our_roundnum++;
+	if(firstround) {
+		firstround = false;
 		int bestcow = 0;
 		for(int i = 1; i < NUMCOWS; i++) {
 			if(MILKVALUES[i] > MILKVALUES[bestcow]) {
@@ -47,9 +50,9 @@ int player_turn(unsigned int roundnum, const struct player_data* players, unsign
 			for(int p = 0; p < numplayers; p++) {
 				if(players[p].id != SELF.id && players[p].milk >= 0) {
 					for(int n = 0; n <= numplayers; n++) {
-						double prob = getprob(roundnum, cow, p);
+						double prob = getprob(our_roundnum, cow, p);
 						probdp[p + 1][n] = prob * probdp[p][n - 1] + (1 - prob) * probdp[p][n];
-		//				fprintf(fout, "[%d,%d]: %lf\n", p, n, probdp[p + 1][n]);
+						dbg(fprintf(stderr, "[%d,%d]: %lf;  ", p, n, probdp[p + 1][n]));
 					}
 				}
 			}
@@ -62,6 +65,5 @@ int player_turn(unsigned int roundnum, const struct player_data* players, unsign
 // This function is called at the end of the game, as a courtesy.
 void game_end()
 {
-	fclose(fout);
 }
 
