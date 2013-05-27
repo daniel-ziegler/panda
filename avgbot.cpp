@@ -49,7 +49,7 @@ int player_turn(unsigned int roundnum, const struct player_data* players, unsign
 					for(int n = 0; n <= numplayers; n++) {
 						double prob = getprob(roundnum, cow, p);
 						probdp[p + 1][n] = prob * probdp[p][n - 1] + (1 - prob) * probdp[p][n];
-						fprintf(fout, "[%d,%d]: %lf\n", p, n, probdp[p + 1][n]);
+		//				fprintf(fout, "[%d,%d]: %lf\n", p, n, probdp[p + 1][n]);
 					}
 				}
 			}
@@ -62,6 +62,6 @@ int player_turn(unsigned int roundnum, const struct player_data* players, unsign
 // This function is called at the end of the game, as a courtesy.
 void game_end()
 {
-
+	fclose(fout);
 }
 
